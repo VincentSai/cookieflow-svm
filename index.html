@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CookieFlow | Next-Gen SVM Portal & Explorer for Cookie Chain</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cookie: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+              accent: '#f59e0b'
+            },
+            darkbg: '#0a0b0e',
+            cardbg: '#12141a',
+            bordercol: '#232733'
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Solana Web3.js -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <style>
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+    .pulse-glow {
+      animation: pulse-slow 3s infinite ease-in-out;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0a0b0e;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #232733;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-darkbg text-slate-100 min-h-screen font-sans antialiased selection:bg-cookie-500 selection:text-black">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-bordercol/80 bg-cardbg/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cookie-600 to-cookie-400 flex items-center justify-center shadow-lg shadow-cookie-500/20">
+          <span class="text-2xl">🍪</span>
+        </div>
+        <div>
+          <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-amber-300 via-yellow-400 to-cookie-500 bg-clip-text text-transparent">
+            CookieFlow
+          </span>
+          <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-cookie-500/10 text-cookie-400 border border-cookie-500/30">
+            SVM Portal
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <!-- Live RPC Status Badge -->
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-darkbg border border-bordercol text-xs text-slate-300">
+          <div class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></div>
+          <span class="font-mono text-slate-400">Cookie Chain SVM</span>
+          <span id="pingBadge" class="text-emerald-400 font-mono">-- ms</span>
+        </div>
+
+        <!-- Connect Wallet Button -->
+        <button id="connectWalletBtn" onclick="toggleWalletConnect()" class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cookie-500 to-cookie-600 hover:from-cookie-400 hover:to-cookie-500 text-black font-semibold text-sm transition-all duration-200 shadow-lg shadow-cookie-500/20 active:scale-95">
+          <i data-lucide="wallet" class="w-4 h-4"></i>
+          <span id="walletBtnText">Connect Wallet</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- HERO / BANNER -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cardbg via-cardbg to-[#1c1b17] border border-bordercol p-6 sm:p-8 shadow-xl">
+      <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-cookie-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 max-w-3xl">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cookie-500/10 border border-cookie-500/20 text-cookie-400 text-xs font-medium mb-3">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>Sub-Second Finality • Low Gas SVM Ecosystem</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
+          Interactive SVM Explorer & Utility Station for <span class="text-cookie-400">Cookie Chain</span>
+        </h1>
+        <p class="text-slate-400 text-sm sm:text-base leading-relaxed mb-5">
+          CookieFlow bridges users and developers to the fast, community-driven Cookie Chain. Inspect live chain telemetry, interact via Nightly & SVM wallets, send transactions, and inscribe on-chain memos in real time.
+        </p>
+        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-400 font-mono">
+          <span class="flex items-center gap-1.5 bg-darkbg/80 px-3 py-1.5 rounded-lg border border-bordercol">
+            <i data-lucide="server" class="w-3.5 h-3.5 text-cookie-400"></i> RPC: rpc.cookiescan.io
+          </span>
+          <span class="flex items-center gap-1.5 bg-darkbg/80 px-3 py-1.5 rounded-lg border border-bordercol">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 text-cookie-400"></i> SVM Agave Engine
+          </span>
+          <a href="https://docs.cookiechain.wtf" target="_blank" class="flex items-center gap-1 text-cookie-400 hover:text-cookie-300 underline underline-offset-4">
+            Docs <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE TELEMETRY DASHBOARD -->
+    <div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <i data-lucide="activity" class="w-5 h-5 text-cookie-400"></i>
+          Live Chain Telemetry
+        </h2>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Auto-refreshing
+          </span>
+          <button onclick="fetchChainStats()" class="p-1.5 rounded-lg bg-cardbg border border-bordercol hover:bg-bordercol/50 text-slate-400 hover:text-white transition">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Metric 1: Current Slot -->
+        <div class="p-5 rounded-xl bg-cardbg border border-bordercol relative overflow-hidden group hover:border-cookie-500/40 transition">
+          <div class="text-xs font-medium text-slate-400 mb-1 flex items-center justify-between">
+            <span>Current Slot</span>
+            <i data-lucide="layers" class="w-4 h-4 text-cookie-500/60"></i>
+          </div>
+          <div id="statSlot" class="text-2xl font-mono font-bold text-white tracking-wider">
+            Loading...
+          </div>
+          <div class="text-[11px] text-slate-500 mt-2">Latest confirmed SVM slot</div>
+        </div>
+
+        <!-- Metric 2: Block Height -->
+        <div class="p-5 rounded-xl bg-cardbg border border-bordercol relative overflow-hidden group hover:border-cookie-500/40 transition">
+          <div class="text-xs font-medium text-slate-400 mb-1 flex items-center justify-between">
+            <span>Block Height</span>
+            <i data-lucide="box" class="w-4 h-4 text-cookie-500/60"></i>
+          </div>
+          <div id="statBlockHeight" class="text-2xl font-mono font-bold text-white tracking-wider">
+            Loading...
+          </div>
+          <div class="text-[11px] text-slate-500 mt-2">Total blocks produced</div>
+        </div>
+
+        <!-- Metric 3: Cluster Version -->
+        <div class="p-5 rounded-xl bg-cardbg border border-bordercol relative overflow-hidden group hover:border-cookie-500/40 transition">
+          <div class="text-xs font-medium text-slate-400 mb-1 flex items-center justify-between">
+            <span>Solana-Core Version</span>
+            <i data-lucide="cpu" class="w-4 h-4 text-cookie-500/60"></i>
+          </div>
+          <div id="statVersion" class="text-2xl font-mono font-bold text-white">
+            4.1.2 Agave
+          </div>
+          <div class="text-[11px] text-slate-500 mt-2">SVM runtime compatibility</div>
+        </div>
+
+        <!-- Metric 4: Nodes & Latency -->
+        <div class="p-5 rounded-xl bg-cardbg border border-bordercol relative overflow-hidden group hover:border-cookie-500/40 transition">
+          <div class="text-xs font-medium text-slate-400 mb-1 flex items-center justify-between">
+            <span>RPC Response Time</span>
+            <i data-lucide="gauge" class="w-4 h-4 text-cookie-500/60"></i>
+          </div>
+          <div id="statLatency" class="text-2xl font-mono font-bold text-emerald-400">
+            -- ms
+          </div>
+          <div class="text-[11px] text-slate-500 mt-2">Direct JSON-RPC latency</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE WORKBENCH & ACTION PANEL -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- LEFT 2 COLS: INTERACTION WORKSTATION -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-cardbg border border-bordercol rounded-2xl overflow-hidden shadow-xl">
+          
+          <!-- Tab Navigation -->
+          <div class="flex border-b border-bordercol bg-darkbg/50 px-4 pt-3 gap-2">
+            <button onclick="switchTab('memo')" id="tabBtn-memo" class="tab-btn px-4 py-2.5 rounded-t-xl text-sm font-semibold text-cookie-400 border-b-2 border-cookie-500 bg-cardbg flex items-center gap-2 transition">
+              <i data-lucide="file-text" class="w-4 h-4"></i> On-Chain Inscription
+            </button>
+            <button onclick="switchTab('transfer')" id="tabBtn-transfer" class="tab-btn px-4 py-2.5 rounded-t-xl text-sm font-semibold text-slate-400 hover:text-white border-b-2 border-transparent flex items-center gap-2 transition">
+              <i data-lucide="send" class="w-4 h-4"></i> SVM Transfer
+            </button>
+            <button onclick="switchTab('rpc')" id="tabBtn-rpc" class="tab-btn px-4 py-2.5 rounded-t-xl text-sm font-semibold text-slate-400 hover:text-white border-b-2 border-transparent flex items-center gap-2 transition">
+              <i data-lucide="terminal" class="w-4 h-4"></i> RPC Sandbox
+            </button>
+          </div>
+
+          <!-- TAB CONTENT 1: MEMO INSCRIPTION -->
+          <div id="tabContent-memo" class="p-6 space-y-5">
+            <div>
+              <h3 class="text-base font-bold text-white mb-1">Inscribe Message onto Cookie Chain</h3>
+              <p class="text-xs text-slate-400">
+                Uses the SPL Memo Program to publish immutable text directly into the Cookie Chain ledger.
+              </p>
+            </div>
+
+            <div class="space-y-3">
+              <label class="block text-xs font-semibold text-slate-300">Custom On-Chain Message</label>
+              <textarea id="memoInput" rows="3" class="w-full rounded-xl bg-darkbg border border-bordercol px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cookie-500 transition font-mono" placeholder="Write something eternal on Cookie Chain, e.g. 'Hello Cookie Chain from CookieFlow!'"></textarea>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <div class="text-xs text-slate-500 font-mono">
+                Gas Cost: <span class="text-cookie-400 font-semibold">~0.000005 COOKIE</span>
+              </div>
+              <button onclick="executeMemoInscription()" id="btnInscribe" class="px-5 py-2.5 rounded-xl bg-cookie-500 hover:bg-cookie-400 text-black font-semibold text-sm flex items-center gap-2 shadow-lg shadow-cookie-500/10 transition active:scale-95">
+                <i data-lucide="feather" class="w-4 h-4"></i>
+                <span>Sign & Inscribe On-Chain</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB CONTENT 2: TRANSFER -->
+          <div id="tabContent-transfer" class="p-6 space-y-5 hidden">
+            <div>
+              <h3 class="text-base font-bold text-white mb-1">Send Cookie Chain Native Token</h3>
+              <p class="text-xs text-slate-400">
+                Execute a native SVM transfer on Cookie Chain with instant transaction confirmation.
+              </p>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Recipient Address (Base58)</label>
+                <input id="transferRecipient" type="text" class="w-full rounded-xl bg-darkbg border border-bordercol px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cookie-500 transition font-mono" placeholder="Enter recipient Solana/Cookie public key...">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Amount</label>
+                <div class="relative">
+                  <input id="transferAmount" type="number" step="0.001" min="0.000001" class="w-full rounded-xl bg-darkbg border border-bordercol px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cookie-500 transition font-mono" placeholder="0.01">
+                  <span class="absolute right-4 top-2.5 text-xs text-cookie-400 font-bold font-mono">COOKIE</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <div class="text-xs text-slate-500">
+                Est. Finality: <span class="text-emerald-400 font-semibold">&lt; 400ms</span>
+              </div>
+              <button onclick="executeTransfer()" id="btnTransfer" class="px-5 py-2.5 rounded-xl bg-cookie-500 hover:bg-cookie-400 text-black font-semibold text-sm flex items-center gap-2 shadow-lg shadow-cookie-500/10 transition active:scale-95">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Confirm & Send</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB CONTENT 3: RPC SANDBOX -->
+          <div id="tabContent-rpc" class="p-6 space-y-5 hidden">
+            <div>
+              <h3 class="text-base font-bold text-white mb-1">Developer JSON-RPC Sandbox</h3>
+              <p class="text-xs text-slate-400">
+                Directly query Cookie Chain's RPC endpoint (<code class="text-cookie-400">https://rpc.cookiescan.io</code>) with native SVM methods.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button onclick="testRpcMethod('getSlot')" class="px-3 py-1.5 rounded-lg bg-darkbg border border-bordercol text-xs font-mono hover:border-cookie-500 text-slate-300 hover:text-white transition">getSlot</button>
+              <button onclick="testRpcMethod('getBlockHeight')" class="px-3 py-1.5 rounded-lg bg-darkbg border border-bordercol text-xs font-mono hover:border-cookie-500 text-slate-300 hover:text-white transition">getBlockHeight</button>
+              <button onclick="testRpcMethod('getVersion')" class="px-3 py-1.5 rounded-lg bg-darkbg border border-bordercol text-xs font-mono hover:border-cookie-500 text-slate-300 hover:text-white transition">getVersion</button>
+              <button onclick="testRpcMethod('getClusterNodes')" class="px-3 py-1.5 rounded-lg bg-darkbg border border-bordercol text-xs font-mono hover:border-cookie-500 text-slate-300 hover:text-white transition">getClusterNodes</button>
+              <button onclick="testRpcMethod('getSupply')" class="px-3 py-1.5 rounded-lg bg-darkbg border border-bordercol text-xs font-mono hover:border-cookie-500 text-slate-300 hover:text-white transition">getSupply</button>
+            </div>
+
+            <div class="relative">
+              <div class="text-[11px] font-mono text-slate-400 mb-1 flex justify-between">
+                <span>RPC Output Console:</span>
+                <span id="rpcTimer" class="text-cookie-400">Ready</span>
+              </div>
+              <pre id="rpcOutput" class="w-full h-44 rounded-xl bg-darkbg border border-bordercol p-4 text-xs font-mono text-emerald-400 overflow-auto custom-scrollbar leading-relaxed">Click any method above to dispatch a real-time RPC query to Cookie Chain...</pre>
+            </div>
+          </div>
+
+          <!-- TRANSACTION RESULT / STATUS BANNER -->
+          <div id="txResultBox" class="hidden mx-6 mb-6 p-4 rounded-xl bg-darkbg border border-cookie-500/30 space-y-2">
+            <div class="flex items-center gap-2 text-xs font-semibold text-cookie-400">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+              <span id="txStatusTitle">Transaction Confirmed!</span>
+            </div>
+            <div class="text-xs font-mono text-slate-300 break-all" id="txSignatureText">
+              --
+            </div>
+            <div class="pt-1 flex items-center gap-4 text-xs">
+              <a id="txExplorerLink" href="#" target="_blank" class="text-cookie-400 hover:text-cookie-300 flex items-center gap-1 underline underline-offset-4">
+                View on CookieScan <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT 1 COL: WALLET STATUS & ECOSYSTEM APPS -->
+      <div class="space-y-6">
+        
+        <!-- WALLET CARD -->
+        <div class="p-6 rounded-2xl bg-cardbg border border-bordercol shadow-xl space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="user-check" class="w-4 h-4 text-cookie-400"></i>
+              Wallet Overview
+            </h3>
+            <span id="walletStateBadge" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+              Disconnected
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="text-xs text-slate-400">Connected Address</div>
+            <div id="walletAddressDisplay" class="p-3 rounded-xl bg-darkbg border border-bordercol text-xs font-mono text-slate-300 break-all select-all">
+              None (Connect Nightly or Phantom)
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <div class="text-xs text-slate-400">Estimated Balance</div>
+            <div id="walletBalanceDisplay" class="text-xl font-mono font-bold text-white">
+              0.00 <span class="text-xs font-medium text-cookie-400">COOKIE</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-bordercol">
+            <div class="text-[11px] text-slate-400 leading-relaxed">
+              Recommended: <span class="text-cookie-400 font-medium">Nightly Wallet</span> is officially favored by Cookie Chain. Phantom & Solflare are also compatible.
+            </div>
+          </div>
+        </div>
+
+        <!-- ECOSYSTEM APPS DIRECTORY -->
+        <div class="p-6 rounded-2xl bg-cardbg border border-bordercol shadow-xl space-y-4">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="compass" class="w-4 h-4 text-cookie-400"></i>
+            Cookie Chain Ecosystem
+          </h3>
+
+          <div class="space-y-2.5 text-xs">
+            <a href="https://www.cookiechain.wtf" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-darkbg border border-bordercol hover:border-cookie-500/40 transition group">
+              <div>
+                <div class="font-semibold text-white group-hover:text-cookie-400 transition">Official Portal</div>
+                <div class="text-slate-500 text-[11px]">cookiechain.wtf</div>
+              </div>
+              <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-500 group-hover:text-cookie-400"></i>
+            </a>
+
+            <a href="https://api.cookiescan.io" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-darkbg border border-bordercol hover:border-cookie-500/40 transition group">
+              <div>
+                <div class="font-semibold text-white group-hover:text-cookie-400 transition">CookieScan & DAS API</div>
+                <div class="text-slate-500 text-[11px]">api.cookiescan.io</div>
+              </div>
+              <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-500 group-hover:text-cookie-400"></i>
+            </a>
+
+            <a href="https://t.me/TheCookieNetChain" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-darkbg border border-bordercol hover:border-cookie-500/40 transition group">
+              <div>
+                <div class="font-semibold text-white group-hover:text-cookie-400 transition">Telegram Community</div>
+                <div class="text-slate-500 text-[11px]">t.me/TheCookieNetChain</div>
+              </div>
+              <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-500 group-hover:text-cookie-400"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-bordercol/80 bg-cardbg/50 mt-12 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span>🍪 CookieFlow</span>
+        <span>•</span>
+        <span>Built for Cookie Chain SVM Superteam Earn Bounty</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/VincentSai/cookieflow-svm" target="_blank" class="hover:text-cookie-400 transition flex items-center gap-1">
+          <i data-lucide="github" class="w-3.5 h-3.5"></i> Open Source Repository
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CLIENT-SIDE JS LOGIC -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    const RPC_URL = "https://rpc.cookiescan.io";
+    let connection = null;
+    let currentWallet = null;
+    let walletPubKey = null;
+
+    // Initialize Solana Connection
+    if (window.solanaWeb3) {
+      connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+    }
+
+    // 1. Telemetry Polling
+    async function fetchChainStats() {
+      const start = performance.now();
+      try {
+        const resp = await fetch(RPC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getSlot' })
+        });
+        const latency = Math.round(performance.now() - start);
+        const data = await resp.json();
+        
+        if (data.result) {
+          document.getElementById('statSlot').innerText = Number(data.result).toLocaleString();
+          document.getElementById('statLatency').innerText = `${latency} ms`;
+          document.getElementById('pingBadge').innerText = `${latency} ms`;
+        }
+
+        // Fetch Block Height
+        const bhResp = await fetch(RPC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'getBlockHeight' })
+        });
+        const bhData = await bhResp.json();
+        if (bhData.result) {
+          document.getElementById('statBlockHeight').innerText = Number(bhData.result).toLocaleString();
+        }
+      } catch (err) {
+        console.error("Telemetry error:", err);
+      }
+    }
+
+    // Run immediately and every 4 seconds
+    fetchChainStats();
+    setInterval(fetchChainStats, 4000);
+
+    // 2. Tab Switching
+    function switchTab(tabId) {
+      ['memo', 'transfer', 'rpc'].forEach(id => {
+        const content = document.getElementById(`tabContent-${id}`);
+        const btn = document.getElementById(`tabBtn-${id}`);
+        if (id === tabId) {
+          content.classList.remove('hidden');
+          btn.classList.add('text-cookie-400', 'border-cookie-500', 'bg-cardbg');
+          btn.classList.remove('text-slate-400', 'border-transparent');
+        } else {
+          content.classList.add('hidden');
+          btn.classList.remove('text-cookie-400', 'border-cookie-500', 'bg-cardbg');
+          btn.classList.add('text-slate-400', 'border-transparent');
+        }
+      });
+      lucide.createIcons();
+    }
+
+    // 3. Wallet Connection (Nightly / Phantom / Solflare)
+    async function toggleWalletConnect() {
+      if (walletPubKey) {
+        // Disconnect
+        walletPubKey = null;
+        currentWallet = null;
+        document.getElementById('walletBtnText').innerText = "Connect Wallet";
+        document.getElementById('walletStateBadge').innerText = "Disconnected";
+        document.getElementById('walletStateBadge').className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20";
+        document.getElementById('walletAddressDisplay').innerText = "None (Connect Nightly or Phantom)";
+        document.getElementById('walletBalanceDisplay').innerHTML = `0.00 <span class="text-xs font-medium text-cookie-400">COOKIE</span>`;
+        return;
+      }
+
+      // Check Nightly first, then Phantom
+      let provider = null;
+      if (window.nightly && window.nightly.solana) {
+        provider = window.nightly.solana;
+      } else if (window.solana && window.solana.isPhantom) {
+        provider = window.solana;
+      } else if (window.solflare) {
+        provider = window.solflare;
+      }
+
+      if (!provider) {
+        alert("Please install Nightly Wallet (or Phantom / Solflare) extension to interact with Cookie Chain!");
+        window.open("https://nightly.app", "_blank");
+        return;
+      }
+
+      try {
+        const resp = await provider.connect();
+        currentWallet = provider;
+        walletPubKey = resp.publicKey ? resp.publicKey.toString() : provider.publicKey.toString();
+        
+        // Update UI
+        const shortAddr = walletPubKey.slice(0, 4) + '...' + walletPubKey.slice(-4);
+        document.getElementById('walletBtnText').innerText = shortAddr;
+        document.getElementById('walletStateBadge').innerText = "Connected";
+        document.getElementById('walletStateBadge').className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        document.getElementById('walletAddressDisplay').innerText = walletPubKey;
+
+        // Fetch Balance
+        if (connection) {
+          const bal = await connection.getBalance(new solanaWeb3.PublicKey(walletPubKey));
+          const solBal = (bal / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+          document.getElementById('walletBalanceDisplay').innerHTML = `${solBal} <span class="text-xs font-medium text-cookie-400">COOKIE</span>`;
+        }
+      } catch (err) {
+        console.error("Wallet connect error:", err);
+        alert("Wallet connection cancelled or failed: " + err.message);
+      }
+    }
+
+    // 4. On-Chain Inscription (Memo Program)
+    async function executeMemoInscription() {
+      const memoText = document.getElementById('memoInput').value.trim();
+      if (!memoText) {
+        alert("Please enter a message to inscribe!");
+        return;
+      }
+      if (!walletPubKey || !currentWallet) {
+        alert("Please connect your wallet first!");
+        return;
+      }
+
+      const btn = document.getElementById('btnInscribe');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Inscribing...`;
+      btn.disabled = true;
+
+      try {
+        const fromPubkey = new solanaWeb3.PublicKey(walletPubKey);
+        // SPL Memo Program v2
+        const MEMO_PROGRAM_ID = new solanaWeb3.PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+        
+        const tx = new solanaWeb3.Transaction();
+        tx.add(new solanaWeb3.TransactionInstruction({
+          keys: [{ pubkey: fromPubkey, isSigner: true, isWritable: true }],
+          programId: MEMO_PROGRAM_ID,
+          data: new TextEncoder().encode(memoText)
+        }));
+
+        const { blockhash } = await connection.getLatestBlockhash('confirmed');
+        tx.recentBlockhash = blockhash;
+        tx.feePayer = fromPubkey;
+
+        const signed = await currentWallet.signAndSendTransaction(tx);
+        const sig = signed.signature || signed;
+
+        // Display success banner
+        document.getElementById('txResultBox').classList.remove('hidden');
+        document.getElementById('txStatusTitle').innerText = "Memo Inscribed On Cookie Chain!";
+        document.getElementById('txSignatureText').innerText = `Signature: ${sig}`;
+        document.getElementById('txExplorerLink').href = `https://api.cookiescan.io/tx/${sig}`;
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Inscription error:", err);
+        alert("Transaction error: " + err.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        lucide.createIcons();
+      }
+    }
+
+    // 5. Native Token Transfer
+    async function executeTransfer() {
+      const recipientStr = document.getElementById('transferRecipient').value.trim();
+      const amountVal = parseFloat(document.getElementById('transferAmount').value);
+
+      if (!recipientStr) {
+        alert("Please enter a recipient address!");
+        return;
+      }
+      if (isNaN(amountVal) || amountVal <= 0) {
+        alert("Please enter a valid transfer amount!");
+        return;
+      }
+      if (!walletPubKey || !currentWallet) {
+        alert("Please connect your wallet first!");
+        return;
+      }
+
+      const btn = document.getElementById('btnTransfer');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processing...`;
+      btn.disabled = true;
+
+      try {
+        const fromPubkey = new solanaWeb3.PublicKey(walletPubKey);
+        const toPubkey = new solanaWeb3.PublicKey(recipientStr);
+        const lamports = Math.round(amountVal * solanaWeb3.LAMPORTS_PER_SOL);
+
+        const tx = new solanaWeb3.Transaction().add(
+          solanaWeb3.SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports
+          })
+        );
+
+        const { blockhash } = await connection.getLatestBlockhash('confirmed');
+        tx.recentBlockhash = blockhash;
+        tx.feePayer = fromPubkey;
+
+        const signed = await currentWallet.signAndSendTransaction(tx);
+        const sig = signed.signature || signed;
+
+        document.getElementById('txResultBox').classList.remove('hidden');
+        document.getElementById('txStatusTitle').innerText = "Transfer Dispatched Successfully!";
+        document.getElementById('txSignatureText').innerText = `Signature: ${sig}`;
+        document.getElementById('txExplorerLink').href = `https://api.cookiescan.io/tx/${sig}`;
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Transfer error:", err);
+        alert("Transfer failed: " + err.message);
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        lucide.createIcons();
+      }
+    }
+
+    // 6. Developer RPC Tester
+    async function testRpcMethod(methodName) {
+      const consoleBox = document.getElementById('rpcOutput');
+      const timer = document.getElementById('rpcTimer');
+      timer.innerText = "Querying...";
+      consoleBox.innerText = `Dispatching JSON-RPC method "${methodName}" to ${RPC_URL}...`;
+
+      const start = performance.now();
+      try {
+        const resp = await fetch(RPC_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method: methodName })
+        });
+        const dur = Math.round(performance.now() - start);
+        const json = await resp.json();
+        timer.innerText = `Resolved in ${dur}ms`;
+        consoleBox.innerText = JSON.stringify(json, null, 2);
+      } catch (err) {
+        timer.innerText = "Error";
+        consoleBox.innerText = `RPC Request Failed: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
